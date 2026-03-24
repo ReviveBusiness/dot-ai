@@ -26,6 +26,8 @@ export interface McpServerConfig {
   attachTo: McpAttachableOperation[];
   /** Optional timeout in milliseconds for MCP requests (default: 30000) */
   timeout?: number;
+  /** Optional HTTP headers for authenticated MCP servers (e.g., Authorization tokens) */
+  headers?: Record<string, string>;
 }
 
 /**

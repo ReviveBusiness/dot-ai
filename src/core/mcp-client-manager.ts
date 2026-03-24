@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { StreamableHTTPClientTransport, StreamableHTTPClientTransportOptions } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
   McpServerConfig,
   McpToolDefinition,
@@ -122,6 +122,7 @@ export class McpClientManager {
         endpoint: s.endpoint,
         attachTo: s.attachTo as McpAttachableOperation[],
         timeout: s.timeout,
+        headers: s.headers,
       };
     });
   }
@@ -184,16 +185,20 @@ export class McpClientManager {
       attachTo: config.attachTo,
     });
 
+    const transportOpts: StreamableHTTPClientTransportOptions = {
+      reconnectionOptions: {
+        maxReconnectionDelay: 30_000,
+        initialReconnectionDelay: 1_000,
+        reconnectionDelayGrowFactor: 1.5,
+        maxRetries: 2,
+      },
+    };
+    if (config.headers && Object.keys(config.headers).length > 0) {
+      transportOpts.requestInit = { headers: config.headers };
+    }
     const transport = new StreamableHTTPClientTransport(
       new URL(config.endpoint),
-      {
-        reconnectionOptions: {
-          maxReconnectionDelay: 30_000,
-          initialReconnectionDelay: 1_000,
-          reconnectionDelayGrowFactor: 1.5,
-          maxRetries: 2,
-        },
-      }
+      transportOpts
     );
 
     const client = new Client(
